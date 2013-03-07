@@ -101,4 +101,17 @@ public class ScheduledExecutionStrategy implements ExecutionStrategy {
 	public String toString() {
 		return "SES:[Count="+count+", Delay="+delay+", Period="+period+", Mode="+mode+"]";
 	}
+	
+	public long getDelay() {
+		return delay;
+	}
+	public int getCount() {
+		return count;
+	}
+	public FixedMode getMode() {
+		return mode;
+	}
+	public long getPeriod() {
+		return period;
+	}
 }

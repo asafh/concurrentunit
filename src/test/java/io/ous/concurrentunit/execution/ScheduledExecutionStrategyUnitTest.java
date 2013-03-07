@@ -3,6 +3,7 @@ package io.ous.concurrentunit.execution;
 import io.ous.concurrentunit.execution.ScheduledExecutionStrategy.FixedMode;
 import io.ous.concurrentunit.testutils.CartesianParameters;
 import io.ous.concurrentunit.testutils.Stopwatch;
+import io.ous.concurrentunit.testutils.Timed;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,11 +19,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.model.RunnerScheduler;
-import org.mockito.Mockito;
+import org.mockito.internal.matchers.LessOrEqual;
 
 @RunWith(Parameterized.class)
 public class ScheduledExecutionStrategyUnitTest {
+	private static final long ERROR_BAR_PER_TASK = 3;
 	private final int executionCount;
 	private long delay;
 	private long period;
@@ -32,9 +33,9 @@ public class ScheduledExecutionStrategyUnitTest {
 	
 	@Parameters(name="{index}: Count={0}, Delay={1}, Period={2}, Mode={3}")
 	public static Collection<Object[]> getParameters() {
-		Integer[] sizes = new Integer[] {0,1,100,50,5};
-		Long[] delays = new Long[] {0l,50l,303l,500l,20l};
-		Long[] periods = new Long[]{0l,30l,120l,400l,22l};
+		Integer[] sizes = new Integer[] {0,1,25,15,5};
+		Long[] delays = new Long[] {0l,50l,130l,250l};
+		Long[] periods = new Long[]{30l,120l,200l};
 		FixedMode[] modes = FixedMode.values();
 		return new CartesianParameters().add(sizes).add(delays).add(periods).add(modes).toParameters();
 	}
@@ -54,6 +55,11 @@ public class ScheduledExecutionStrategyUnitTest {
 	@Test
 	public void test() throws Exception {
 		System.out.println(strategy);
+		Assert.assertEquals(delay, strategy.getDelay());
+		Assert.assertEquals(executionCount, strategy.getCount());
+		Assert.assertEquals(period, strategy.getPeriod());
+		Assert.assertEquals(mode, strategy.getMode());
+		
 		ExecutorService executor = Executors.newCachedThreadPool();// Mockito.mock(ExecutorService.class);
 //		Callable<?> call = Mockito.mock(Callable.class);
 		final AtomicInteger counter = new AtomicInteger(-1);
@@ -67,15 +73,22 @@ public class ScheduledExecutionStrategyUnitTest {
 		List<Future<Integer>> list = run.get();
 		watch.end();
 		
-		System.out.println(list);
-		System.out.println(watch.getElapsed());
-		System.out.println(watch.getLaps());
-		/*ImmediateExecutionStrategy strategy = new ImmediateExecutionStrategy(executionCount);
-		ExecutorService executor = Mockito.mock(ExecutorService.class);
-		Callable<?> call = Mockito.mock(Callable.class);
-		strategy.run(executor, call);
-		Mockito.verify(executor,Mockito.times(executionCount)).submit(call);
-//		Mockito.verify(call,Mockito.times(executionCount)).call();
-		Mockito.verifyNoMoreInteractions(executor,call);*/
+		
+		List<Timed> laps = watch.getLaps();
+		for(int i =0; i < list.size(); ++i) {
+			Assert.assertEquals(Integer.valueOf(i), list.get(i).get()); 
+			long expectedMark = strategy.getDelay()+(i*strategy.getPeriod());
+			Assert.assertThat(laps.get(i).getEnd()-watch.getStart(), new LessOrEqual<Long>(expectedMark+getErrorBar(i)));
+		}
+		
+		long elapsed = watch.getElapsed();
+		long expectedElapsed = strategy.getDelay()+(strategy.getCount()*strategy.getPeriod());
+		Assert.assertThat(elapsed, new LessOrEqual<Long>(expectedElapsed+getErrorBar()));
+	}
+	long getErrorBar() {
+		return getErrorBar(executionCount);
+	}
+	long getErrorBar(int tasks) {
+		return ERROR_BAR_PER_TASK*(tasks+1);
 	}
 }

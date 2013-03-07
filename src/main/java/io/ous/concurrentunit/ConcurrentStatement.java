@@ -4,6 +4,7 @@ import io.ous.concurrentunit.execution.ExecutionStrategy;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -36,6 +37,12 @@ class ConcurrentStatement extends Statement {
 					throw e;
 				}
 				catch (Throwable e) {
+					/*
+					At first this looks odd, but Callable's call signature throws an Exception
+					while Statement's evaluate throws a Throwable.
+					We don't want to catch exceptions here, and we almost always we don't want to catch Errors 
+					This should is generally everything Throwable.
+					*/
 					throw new IllegalStateException(e); //should never occur since normally everything is either an Exception or an Error
 				}
 			}
@@ -43,7 +50,12 @@ class ConcurrentStatement extends Statement {
     	
     	List<Future<Boolean>> list = run.get();
     	for(Future<Boolean> response : list) {
-    		response.get(); //Throws ExecutionException if occured that will buble up
+    		try {
+    			response.get();    			
+    		}
+    		catch(ExecutionException ee) {
+    			throw ee.getCause();
+    		}
     	}
     }
 
