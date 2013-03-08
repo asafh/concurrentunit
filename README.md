@@ -5,7 +5,8 @@ concurrentunit was created to help me test concurrent parts in [justconfig](http
 Using JUnit there was no easy was to test code under concurrent load.
 
 ## Example
-'''java
+
+```java
 @Test
   public void testCachexd() throws SecurityException, Throwable {
 		ExecutionTargetRunner runner = new ExecutionTargetRunner(new ScheduledExecutionStrategy(50, 100, 50));
@@ -42,4 +43,4 @@ Using JUnit there was no easy was to test code under concurrent load.
 			}
 		});
 	}
-'''
+```
