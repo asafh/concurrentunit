@@ -23,7 +23,7 @@ import org.mockito.internal.matchers.LessOrEqual;
 
 @RunWith(Parameterized.class)
 public class ScheduledExecutionStrategyUnitTest {
-	private static final long ERROR_BAR_PER_TASK = 3;
+	private static final long ERROR_BAR_PER_TASK = 4;
 	private final int executionCount;
 	private long delay;
 	private long period;
@@ -33,9 +33,9 @@ public class ScheduledExecutionStrategyUnitTest {
 	
 	@Parameters(name="{index}: Count={0}, Delay={1}, Period={2}, Mode={3}")
 	public static Collection<Object[]> getParameters() {
-		Integer[] sizes = new Integer[] {0,1,25,15,5};
-		Long[] delays = new Long[] {0l,50l,130l,250l};
-		Long[] periods = new Long[]{30l,120l,200l};
+		Integer[] sizes = new Integer[] {0,1,15,5};
+		Long[] delays = new Long[] {0l,50l,130l};
+		Long[] periods = new Long[]{30l,100l};
 		FixedMode[] modes = FixedMode.values();
 		return new CartesianParameters().add(sizes).add(delays).add(periods).add(modes).toParameters();
 	}
