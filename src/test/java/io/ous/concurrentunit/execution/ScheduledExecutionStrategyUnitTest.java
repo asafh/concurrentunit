@@ -23,7 +23,7 @@ import org.mockito.internal.matchers.LessOrEqual;
 
 @RunWith(Parameterized.class)
 public class ScheduledExecutionStrategyUnitTest {
-	private static final long ERROR_BAR_PER_TASK = 4;
+	private static final long ERROR_BAR_PER_TASK = 5;
 	private final int executionCount;
 	private long delay;
 	private long period;
